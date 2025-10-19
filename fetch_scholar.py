@@ -44,26 +44,28 @@ def main():
         print("Failed to find author profile.", file=sys.stderr)
         sys.exit(2)
 
-    indices = author.get("indices", {})
-
+    # Extract data from author object
     data = {
         "name": author.get("name"),
         "affiliation": author.get("affiliation"),
         "profile_url": author.get("scholar_url"),
-        "citations_all": None,
-        "citations": None,
-        "h_index": None,
-        "i10_index": None,
-        "raw_indices": indices,
-        "last_updated": datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+        "citations_all": author.get("citedby"),
+        "citations": author.get("citedby"),
+        "h_index": author.get("hindex"),
+        "i10_index": author.get("i10index"),
+        "raw_indices": author.get("indices", {}),
+        "last_updated": datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat()
     }
 
-    # Scholarly’s internal structure might vary; we handle both common patterns
-    # Pattern A: indices["cites"] is a dict with keys "all" & "since201X"
-    cites = indices.get("cites")
-    if isinstance(cites, dict):
-        data["citations_all"] = cites.get("all")
-    # Pattern B / fallback
-    data["citations"] = author.get("citedby")
+    # Save to data.json
+    with open("data.json", "w") as f:
+        json.dump(data, f, indent=2)
 
-    # h
+    print("Data saved to data.json")
+    print(f"Author: {data['name']}")
+    print(f"Citations: {data['citations_all'] or data['citations']}")
+    print(f"H-index: {data['h_index']}")
+    print(f"I10-index: {data['i10_index']}")
+
+if __name__ == "__main__":
+    main()
