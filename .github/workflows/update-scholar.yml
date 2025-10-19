@@ -12,7 +12,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          persist-credentials: true  # allows pushing back using GITHUB_TOKEN
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -36,6 +36,3 @@ jobs:
             git commit -m "chore: update scholar stats (automated)"
             git push
           fi
-        env:
-          # GITHUB_TOKEN is automatically available in Actions and persisted by checkout
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
