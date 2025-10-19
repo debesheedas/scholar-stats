@@ -1,0 +1,41 @@
+name: Update Google Scholar stats
+
+on:
+  schedule:
+    - cron: "0 2 * * *"  # runs at 02:00 UTC daily
+  workflow_dispatch:     # allows manual runs from Actions tab
+
+jobs:
+  update-stats:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true  # allows pushing back using GITHUB_TOKEN
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && pip install -r requirements.txt
+
+      - name: Run fetch script
+        run: python fetch_scholar.py
+
+      - name: Commit and push updated data.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data.json || true
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: update scholar stats (automated)"
+            git push
+          fi
+        env:
+          # GITHUB_TOKEN is automatically available in Actions and persisted by checkout
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
